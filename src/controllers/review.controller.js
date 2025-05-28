@@ -13,7 +13,7 @@ exports.addReview = async (req, res) => {
   }
 
   try {
-    const book = await Book.findById(req.params.id);
+    const book = await Book.findById(req.params.bookId);
     
     if (!book) {
       return res.status(404).json({ message: 'Book not found' });
@@ -21,7 +21,7 @@ exports.addReview = async (req, res) => {
 
     // Check if user has already reviewed this book
     const existingReview = await Review.findOne({
-      bookId: req.params.id,
+      bookId: book._id,
       userId: req.user.id
     });
 
@@ -33,13 +33,20 @@ exports.addReview = async (req, res) => {
 
     // Create new review
     const review = new Review({
-      bookId: req.params.id,
+      bookId: book._id,
       userId: req.user.id,
       rating: req.body.rating,
       comment: req.body.comment
     });
 
     await review.save();
+
+    // Update book's average rating
+    const reviews = await Review.find({ bookId: book._id });
+    const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+    book.averageRating = totalRating / reviews.length;
+    book.reviewCount = reviews.length;
+    await book.save();
 
     // Populate user info
     await review.populate('user', 'username');
@@ -124,7 +131,24 @@ exports.deleteReview = async (req, res) => {
       });
     }
 
-    await review.remove();
+    // Find and delete the review (replacing deprecated remove() method)
+    await Review.deleteOne({ _id: req.params.id });
+    
+    // Update book's average rating after review deletion
+    const book = await Book.findById(review.bookId);
+    if (book) {
+      const reviews = await Review.find({ bookId: book._id });
+      
+      if (reviews.length > 0) {
+        const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+        book.averageRating = totalRating / reviews.length;
+      } else {
+        book.averageRating = 0;
+      }
+      
+      book.reviewCount = reviews.length;
+      await book.save();
+    }
 
     res.json({
       success: true,

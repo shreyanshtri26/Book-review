@@ -9,7 +9,7 @@ const router = express.Router({ mergeParams: true });
 // @desc    Add a review to a book
 // @access  Private
 router.post(
-  '/books/:id/reviews',
+  '/:bookId/reviews',
   [
     auth,
     [
@@ -20,11 +20,11 @@ router.post(
   reviewController.addReview
 );
 
-// @route   PUT /api/reviews/:id
+// @route   PUT /reviews/:id
 // @desc    Update a review
 // @access  Private
 router.put(
-  '/:id',
+  '/reviews/:id',
   [
     auth,
     [
@@ -35,9 +35,9 @@ router.put(
   reviewController.updateReview
 );
 
-// @route   DELETE /api/reviews/:id
+// @route   DELETE /reviews/:id
 // @desc    Delete a review
 // @access  Private
-router.delete('/:id', auth, reviewController.deleteReview);
+router.delete('/reviews/:id', auth, reviewController.deleteReview);
 
 module.exports = router;

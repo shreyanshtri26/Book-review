@@ -1,200 +1,165 @@
 # Book Review API
 
-A RESTful API for a Book Review System built with Node.js, Express, and MongoDB. This system allows users to manage books and their reviews with authentication and authorization features.
+A RESTful API for a Book Review System built with Node.js, Express, and MongoDB that allows users to manage books and their reviews with JWT authentication.
 
-## Features
+## Project Setup Instructions
 
-- User authentication with JWT
-- CRUD operations for books
-- Add, update, and delete reviews
-- Search books by title or author
-- Pagination and filtering
-- Input validation
-- Error handling
-
-## Tech Stack
-
-- Node.js
-- Express.js
-- MongoDB (with Mongoose)
-- JWT for authentication
-- Express Validator for request validation
-
-## Prerequisites
-
-- Node.js (v14 or higher)
-- MongoDB (local or MongoDB Atlas)
-- npm or yarn
-
-## Installation
-
-1. Clone the repository:
+1. **Clone and Install Dependencies**
    ```bash
    git clone https://github.com/yourusername/book-review.git
    cd book-review
-   ```
-
-2. Install dependencies:
-   ```bash
    npm install
    ```
 
-3. Create a `.env` file in the root directory and add the following variables:
+2. **Environment Configuration**
+   - Create a `.env` file in the root directory with the following variables:
    ```env
    PORT=3000
    MONGODB_URI=mongodb://localhost:27017/book_review
-   JWT_SECRET=your_jwt_secret_key_here
+   JWT_SECRET=your_jwt_secret_key
    JWT_EXPIRE=24h
    ```
 
-4. Start the development server:
+## How to Run Locally
+
+1. **Start MongoDB**
    ```bash
-   # Development
+   # Windows
+   net start MongoDB
+
+   # Linux/Mac
+   sudo service mongod start
+   ```
+
+2. **Launch the Application**
+   ```bash
+   # Development mode with nodemon
    npm run dev
 
-   # Production
+   # Production mode
    npm start
    ```
 
-## API Documentation
-
-### Authentication
-
-#### Register a new user
-```http
-POST /api/auth/signup
-```
-
-**Request Body:**
-```json
-{
-  "username": "johndoe",
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-
-#### Login
-```http
-POST /api/auth/login
-```
-
-**Request Body:**
-```json
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-
-### Books
-
-#### Get all books
-```http
-GET /api/books?page=1&limit=10&author=John&genre=Fiction
-```
-
-#### Search books
-```http
-GET /api/books/search?q=harry
-```
-
-#### Get single book
-```http
-GET /api/books/:id
-```
-
-#### Add a new book (Protected)
-```http
-POST /api/books
-```
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Request Body:**
-```json
-{
-  "title": "The Great Gatsby",
-  "author": "F. Scott Fitzgerald",
-  "genre": "Classic",
-  "publicationYear": 1925
-}
-```
-
-### Reviews
-
-#### Add a review (Protected)
-```http
-POST /api/books/:id/reviews
-```
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Request Body:**
-```json
-{
-  "rating": 5,
-  "comment": "A great book!"
-}
-```
-
-#### Update a review (Protected)
-```http
-PUT /api/reviews/:id
-```
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
-
-**Request Body:**
-```json
-{
-  "rating": 4,
-  "comment": "Updated review"
-}
-```
-
-#### Delete a review (Protected)
-```http
-DELETE /api/reviews/:id
-```
-
-**Headers:**
-```
-Authorization: Bearer <token>
-```
+3. **Access the API**
+   - The API will be available at `http://localhost:3000`
+   - Use the health check endpoint to verify: `GET http://localhost:3000/health`
 
 ## Project Structure
 
 ```
 src/
 ├── config/           # Configuration files
-├── controllers/      # Route controllers
-├── middleware/       # Custom middleware
-├── models/           # Database models
-├── routes/           # Route definitions
-├── services/         # Business logic
-├── utils/            # Helper functions
+├── controllers/      # Route controllers (handle requests)
+├── middleware/       # Authentication & validation middleware
+├── models/           # Database models/schemas
+├── routes/           # API route definitions
 ├── server.js         # Application entry point
 ```
 
-## Contributing
+## API Endpoints
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### Authentication
+- `POST /api/auth/signup` - Register a new user
+- `POST /api/auth/login` - Authenticate and get JWT token
+- `GET /api/auth/me` - Get current user (protected)
 
-## Database Schema Design
+### Books
+- `GET /api/books` - Get all books (with pagination & filters)
+- `GET /api/books/:id` - Get book details including reviews
+- `POST /api/books` - Add a new book (protected)
+- `GET /api/books/search` - Search books by title or author
+
+### Reviews
+- `POST /api/books/:id/reviews` - Add a review (protected)
+- `PUT /api/books/reviews/:id` - Update a review (protected)
+- `DELETE /api/books/reviews/:id` - Delete a review (protected)
+
+## Example API Requests
+
+### Using cURL
+
+1. **Register a User**
+   ```bash
+   curl -X POST http://localhost:3000/api/auth/signup \
+     -H "Content-Type: application/json" \
+     -d '{
+       "username": "testuser",
+       "email": "test@example.com",
+       "password": "password123"
+     }'
+   ```
+
+2. **Login & Get Token**
+   ```bash
+   curl -X POST http://localhost:3000/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "test@example.com",
+       "password": "password123"
+     }'
+   ```
+
+3. **Add a Book (Authenticated)**
+   ```bash
+   # Replace YOUR_TOKEN with the token from login
+   curl -X POST http://localhost:3000/api/books \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -d '{
+       "title": "The Great Gatsby",
+       "author": "F. Scott Fitzgerald",
+       "genre": "Classic",
+       "publicationYear": 1925
+     }'
+   ```
+
+4. **Get Books with Filters**
+   ```bash
+   curl "http://localhost:3000/api/books?page=1&limit=10&genre=Classic"
+   ```
+
+5. **Add a Review (Authenticated)**
+   ```bash
+   # Replace YOUR_TOKEN and BOOK_ID
+   curl -X POST http://localhost:3000/api/books/BOOK_ID/reviews \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -d '{
+       "rating": 5,
+       "comment": "A masterpiece!"
+     }'
+   ```
+
+### Using Postman
+
+1. **Import Collection**
+   - Collection file: `Book-Review-API.postman_collection.json`
+   - Set environment variable `baseUrl` to `http://localhost:3000`
+   - The login request automatically sets the token for other requests
+
+## Design Decisions & Assumptions
+
+1. **Authentication Strategy**
+   - JWT-based authentication with 24-hour token expiry
+   - Passwords hashed using bcrypt for security
+   - Protected routes require valid token in Authorization header
+
+2. **Data Modeling Decisions**
+   - One user can create multiple books and reviews
+   - One book can have many reviews but only one per user
+   - Average rating calculated and cached in the book document
+
+3. **API Design**
+   - RESTful principles with resource-based URLs
+   - Consistent error responses with appropriate status codes
+   - Pagination for collections to improve performance
+
+4. **Performance Optimizations**
+   - Indexed fields for faster querying (title, author, userId, bookId)
+   - Caching average ratings in the book document
+   - Efficient validation using express-validator
+
+## Database Schema
 
 ### Entity Relationship (ER) Diagram
 
@@ -220,20 +185,18 @@ src/
                                             Reviews Book
 ```
 
-### Schema Details
+### Schema Definitions
 
-#### User Schema
 ```javascript
+// User Schema
 {
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true, hashed },
+  password: { type: String, required: true },
   timestamps: true
 }
-```
 
-#### Book Schema
-```javascript
+// Book Schema
 {
   title: { type: String, required: true },
   author: { type: String, required: true },
@@ -244,10 +207,8 @@ src/
   reviewCount: { type: Number, default: 0 },
   timestamps: true
 }
-```
 
-#### Review Schema
-```javascript
+// Review Schema
 {
   bookId: { type: ObjectId, ref: 'Book', required: true },
   userId: { type: ObjectId, ref: 'User', required: true },
@@ -255,151 +216,3 @@ src/
   comment: { type: String, maxlength: 1000 },
   timestamps: true
 }
-```
-
-## Design Decisions & Assumptions
-
-1. **Authentication & Authorization**
-   - JWT-based authentication for secure API access
-   - Tokens expire after 24 hours
-   - Passwords are hashed using bcrypt
-
-2. **Data Modeling**
-   - Books and Reviews are separate collections for better scalability
-   - Average rating is stored in the Book document for quick access
-   - One review per user per book enforced by unique compound index
-
-3. **Performance Considerations**
-   - Pagination implemented for book listings and reviews
-   - Indexes on frequently queried fields
-   - Caching of average ratings in Book documents
-
-4. **Validation**
-   - Input validation using express-validator
-   - Custom middleware for route protection
-   - Error handling middleware for consistent responses
-
-## Quick Start Guide
-
-1. **Clone & Install**
-   ```bash
-   git clone https://github.com/yourusername/book-review.git
-   cd book-review
-   npm install
-   ```
-
-2. **Environment Setup**
-   ```bash
-   # Create .env file
-   cp .env.example .env
-
-   # Update .env with your values
-   PORT=3000
-   MONGODB_URI=mongodb://localhost:27017/book_review
-   JWT_SECRET=your_jwt_secret_key
-   JWT_EXPIRE=24h
-   ```
-
-3. **Database Setup**
-   ```bash
-   # Start MongoDB (Windows)
-   net start MongoDB
-
-   # Start MongoDB (Linux/Mac)
-   sudo service mongod start
-   ```
-
-4. **Run the Application**
-   ```bash
-   # Development mode
-   npm run dev
-
-   # Production mode
-   npm start
-   ```
-
-## API Testing Guide
-
-### Using cURL
-
-1. **Register a User**
-   ```bash
-   curl -X POST http://localhost:3000/api/auth/signup \
-     -H "Content-Type: application/json" \
-     -d '{
-       "username": "testuser",
-       "email": "test@example.com",
-       "password": "password123"
-     }'
-   ```
-
-2. **Login & Get Token**
-   ```bash
-   curl -X POST http://localhost:3000/api/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "test@example.com",
-       "password": "password123"
-     }'
-   ```
-
-3. **Add a Book**
-   ```bash
-   # Replace YOUR_TOKEN with the token from login
-   curl -X POST http://localhost:3000/api/books \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer YOUR_TOKEN" \
-     -d '{
-       "title": "The Great Gatsby",
-       "author": "F. Scott Fitzgerald",
-       "genre": "Classic",
-       "publicationYear": 1925
-     }'
-   ```
-
-4. **Get Books with Filters**
-   ```bash
-   curl "http://localhost:3000/api/books?page=1&limit=10&genre=Classic"
-   ```
-
-5. **Add a Review**
-   ```bash
-   # Replace YOUR_TOKEN and BOOK_ID
-   curl -X POST http://localhost:3000/api/books/BOOK_ID/reviews \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer YOUR_TOKEN" \
-     -d '{
-       "rating": 5,
-       "comment": "A masterpiece!"
-     }'
-   ```
-
-### Using Postman
-
-1. Import the provided Postman collection:
-   - Open Postman
-   - Click "Import"
-   - Select the `Book-Review-API.postman_collection.json` file
-
-2. Set up environment variables:
-   - Create a new environment
-   - Add variables:
-     - `baseUrl`: `http://localhost:3000`
-     - `token`: [Leave empty, will be auto-filled after login]
-
-3. Run the requests in sequence:
-   - Register/Login
-   - Add Books
-   - Add Reviews
-   - Test other endpoints
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- [Express.js](https://expressjs.com/)
-- [MongoDB](https://www.mongodb.com/)
-- [Mongoose](https://mongoosejs.com/)
-- [JWT](https://jwt.io/)

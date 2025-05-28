@@ -27,7 +27,8 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
-app.use('/api/reviews', reviewRoutes);
+// Mount review routes under /api/books
+app.use('/api/books', reviewRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
